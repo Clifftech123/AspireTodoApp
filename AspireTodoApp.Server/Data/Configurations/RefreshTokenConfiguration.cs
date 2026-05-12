@@ -1,4 +1,3 @@
-
 using AspireTodoApp.Server.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -11,18 +10,15 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
     {
         builder.HasKey(r => r.Id);
 
-        builder.Property(r => r.Token)
+        builder.Property(r => r.TokenHash)
             .IsRequired()
             .HasMaxLength(500);
 
-        builder.HasIndex(r => r.Token).IsUnique();
+        builder.HasIndex(r => r.TokenHash).IsUnique();
 
         builder.HasOne(r => r.User)
             .WithMany()
             .HasForeignKey(r => r.UserId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        builder.Ignore(r => r.IsExpired);
-        builder.Ignore(r => r.IsActive);
     }
 }
