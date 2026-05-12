@@ -57,6 +57,16 @@ internal sealed class RefreshTokenService(AppDbContext db, IOptions<JwtSettings>
         return replacement;
     }
 
+    public async Task RevokeAsync(string rawToken, CancellationToken ct = default)
+    {
+        var existing = await GetActiveTokenAsync(rawToken, ct);
+        if (existing is not null)
+        {
+            existing.Revoke();
+            await db.SaveChangesAsync(ct);
+        }
+    }
+
     public async Task RevokeAllForUserAsync(string userId, CancellationToken ct = default)
     {
         var tokens = await db.RefreshTokens

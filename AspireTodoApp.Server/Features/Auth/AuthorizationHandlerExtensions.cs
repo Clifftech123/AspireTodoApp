@@ -9,6 +9,7 @@ public static class AuthorizationHandlerExtensions
         builder.Services.AddScoped<IAuthorizationHandler, CheckCurrentUserAuthHandler>();
         return builder;
     }
+    
 
     public static AuthorizationPolicyBuilder RequireCurrentUser(this AuthorizationPolicyBuilder builder)
     {
