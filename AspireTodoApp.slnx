@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="AspireTodoApp.AppHost/AspireTodoApp.AppHost.csproj" />
+  <Project Path="AspireTodoApp.Server/AspireTodoApp.Server.csproj" />
+  <Project Path="AspireTodoApp.Server.Tests/AspireTodoApp.Server.Tests.csproj" />
+  <Project Path="TodoApp.ServiceDefaults/TodoApp.ServiceDefaults.csproj" />
+</Solution>
