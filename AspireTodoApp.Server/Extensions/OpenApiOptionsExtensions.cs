@@ -20,11 +20,13 @@ public static class OpenApiOptionsExtensions
 
         options.AddDocumentTransformer((document, context, cancellationToken) =>
         {
+            document.Info ??= new OpenApiInfo();
             document.Info.Title = "Aspire Todo API";
             document.Info.Version = "v1";
 
             document.Components ??= new OpenApiComponents();
-            document.Components!.SecuritySchemes["Bearer"] = scheme;
+            document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+            document.Components.SecuritySchemes["Bearer"] = scheme;
 
             return Task.CompletedTask;
         });

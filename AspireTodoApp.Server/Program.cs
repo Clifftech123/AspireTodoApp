@@ -14,6 +14,8 @@ builder.AddAppServices();
 
 var app = builder.Build();
 
+await app.MigrateDatabaseAsync();
+
 app.UseExceptionHandler();
 app.UseHttpLogging();
 app.UseRateLimiter();

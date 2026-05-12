@@ -7,7 +7,7 @@ namespace AspireTodoApp.Server.Data.Interceptors;
 
 public class AuditInterceptor(IHttpContextAccessor httpContextAccessor) : SaveChangesInterceptor
 {
-    private List<AuditEntry> _pendingEntries = [];
+    private static readonly AsyncLocal<List<AuditEntry>?> _pendingEntries = new();
 
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
@@ -15,7 +15,7 @@ public class AuditInterceptor(IHttpContextAccessor httpContextAccessor) : SaveCh
         CancellationToken cancellationToken = default)
     {
         if (eventData.Context is not null)
-            _pendingEntries = CaptureEntries(eventData.Context);
+            _pendingEntries.Value = CaptureEntries(eventData.Context);
 
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
@@ -25,16 +25,16 @@ public class AuditInterceptor(IHttpContextAccessor httpContextAccessor) : SaveCh
         int result,
         CancellationToken cancellationToken = default)
     {
-        if (eventData.Context is not null && _pendingEntries.Count > 0)
+        var entries = _pendingEntries.Value;
+
+        if (eventData.Context is not null && entries?.Count > 0)
         {
             var userId = httpContextAccessor.HttpContext?.User
                 .FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var trails = _pendingEntries
-                .Select(e => e.ToAuditTrail(userId))
-                .ToList();
+            var trails = entries.Select(e => e.ToAuditTrail(userId)).ToList();
 
-            _pendingEntries.Clear(); // clear before saving to prevent recursion
+            _pendingEntries.Value = null;
 
             eventData.Context.Set<AuditTrail>().AddRange(trails);
             await eventData.Context.SaveChangesAsync(cancellationToken);

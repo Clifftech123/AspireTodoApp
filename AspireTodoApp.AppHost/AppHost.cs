@@ -3,6 +3,7 @@ using CommunityToolkit.Aspire.Hosting.MailPit;
 var builder = DistributedApplication.CreateBuilder(args);
 
 var postgres = builder.AddPostgres("postgres")
+    .WithDataVolume()
     .WithPgAdmin()
     .AddDatabase("tododb");
 
