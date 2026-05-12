@@ -1,6 +1,7 @@
 using AspireTodoApp.Server.Data;
 using AspireTodoApp.Server.Data.Interceptors;
-using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace AspireTodoApp.Server.Extensions;
 
@@ -10,16 +11,34 @@ public static class DatabaseExtensions
     {
         builder.Services.AddHttpContextAccessor();
 
-        // Interceptors — SoftDelete is singleton (stateless), Audit is scoped (holds pending entries per request)
         builder.Services.AddSingleton<SoftDeleteInterceptor>();
-        builder.Services.AddScoped<AuditInterceptor>();
+        builder.Services.AddSingleton<AuditInterceptor>();
 
-        builder.Services.AddSingleton<IInterceptor>(sp => sp.GetRequiredService<SoftDeleteInterceptor>());
-        builder.Services.AddScoped<IInterceptor>(sp => sp.GetRequiredService<AuditInterceptor>());
+        builder.Services.AddSingleton<IDbContextOptionsConfiguration<AppDbContext>>(sp =>
+            new InterceptorOptionsConfiguration(
+                sp.GetRequiredService<SoftDeleteInterceptor>(),
+                sp.GetRequiredService<AuditInterceptor>()));
 
         builder.AddNpgsqlDbContext<AppDbContext>("tododb");
         builder.AddRedisDistributedCache("cache");
 
         return builder;
+    }
+
+    public static async Task MigrateDatabaseAsync(this WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await db.Database.MigrateAsync();
+    }
+
+    private sealed class InterceptorOptionsConfiguration(
+        SoftDeleteInterceptor softDelete,
+        AuditInterceptor audit) : IDbContextOptionsConfiguration<AppDbContext>
+    {
+        public void Configure(IServiceProvider serviceProvider, DbContextOptionsBuilder builder)
+        {
+            builder.AddInterceptors(softDelete, audit);
+        }
     }
 }

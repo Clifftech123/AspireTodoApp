@@ -2,24 +2,17 @@ using System.Security.Claims;
 using AspireTodoApp.Server.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace AspireTodoApp.Server.Data;
 
 public class AppDbContext(
     DbContextOptions<AppDbContext> options,
-    IEnumerable<IInterceptor> interceptors,
     IHttpContextAccessor httpContextAccessor) : IdentityDbContext<AppUser>(options)
 {
     public DbSet<Todo> Todos => Set<Todo>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<AuditTrail> AuditTrails => Set<AuditTrail>();
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.AddInterceptors(interceptors);
-    }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

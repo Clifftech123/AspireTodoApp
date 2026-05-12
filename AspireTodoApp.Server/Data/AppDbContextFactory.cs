@@ -12,6 +12,6 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 
         var httpContextAccessor = new HttpContextAccessor();
 
-        return new AppDbContext(optionsBuilder.Options, [], httpContextAccessor);
+        return new AppDbContext(optionsBuilder.Options, httpContextAccessor);
     }
 }
