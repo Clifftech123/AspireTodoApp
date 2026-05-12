@@ -27,5 +27,7 @@ public class TodoConfiguration : IEntityTypeConfiguration<Todo>
             .WithMany(c => c.Todos)
             .HasForeignKey(t => t.CategoryId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasQueryFilter(t => !t.IsDeleted);
     }
 }
