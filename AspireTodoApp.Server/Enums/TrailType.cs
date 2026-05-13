@@ -2,7 +2,7 @@
 
 namespace AspireTodoApp.Server.Enums
 {
-    public enum TrailType 
+    public enum TrailType
     {
         None = 0,
         Create = 1,

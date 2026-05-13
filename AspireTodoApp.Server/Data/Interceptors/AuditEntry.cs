@@ -7,14 +7,16 @@ namespace AspireTodoApp.Server.Data.Interceptors;
 
 public class AuditEntry(EntityEntry entry)
 {
-    public string EntityName => entry.Metadata.ClrType.Name;
+    // Eagerly captured during SavingChangesAsync, before EF Core calls AcceptAllChanges()
+    // which resets entity states to Unchanged before SavedChangesAsync is invoked.
+    public string EntityName { get; } = entry.Metadata.ClrType.Name;
 
-    public string? PrimaryKey => entry.Properties
+    public string? PrimaryKey { get; } = entry.Properties
         .Where(p => p.Metadata.IsPrimaryKey())
         .Select(p => p.CurrentValue?.ToString())
         .FirstOrDefault();
 
-    public TrailType TrailType => entry.State switch
+    public TrailType TrailType { get; } = entry.State switch
     {
         EntityState.Added    => TrailType.Create,
         EntityState.Modified => TrailType.Update,
@@ -22,19 +24,19 @@ public class AuditEntry(EntityEntry entry)
         _                    => TrailType.None
     };
 
-    public Dictionary<string, object?> OldValues => entry.State == EntityState.Added
+    public Dictionary<string, object?> OldValues { get; } = entry.State == EntityState.Added
         ? []
         : entry.Properties
             .Where(p => p.IsModified || entry.State == EntityState.Deleted)
             .ToDictionary(p => p.Metadata.Name, p => p.OriginalValue);
 
-    public Dictionary<string, object?> NewValues => entry.State == EntityState.Deleted
+    public Dictionary<string, object?> NewValues { get; } = entry.State == EntityState.Deleted
         ? []
         : entry.Properties
             .Where(p => p.IsModified || entry.State == EntityState.Added)
             .ToDictionary(p => p.Metadata.Name, p => p.CurrentValue);
 
-    public List<string> ChangedColumns => entry.State != EntityState.Modified
+    public List<string> ChangedColumns { get; } = entry.State != EntityState.Modified
         ? []
         : entry.Properties
             .Where(p => p.IsModified)
